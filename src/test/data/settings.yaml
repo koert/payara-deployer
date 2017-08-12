@@ -1,0 +1,17 @@
+# Details of a user
+---
+clusterSettings:
+  - name: pas-cluster
+    nodes:
+    - node04
+    - node05
+    rollingUpdate: false
+    defaultArtifactType: war
+
+useVersion: true
+
+downloadRepositoryUrl:
+- http://prlxobs01:8081/nexus/content/groups/public
+- http://buildserver01.haarlem.dem.local:8080/nexus-webapp-1.5.0/content/repositories/releases
+
+uploadRepositoryUrl: http://prlxobs01:8081/nexus/content/repositories/releases
