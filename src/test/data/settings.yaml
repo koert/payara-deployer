@@ -1,4 +1,4 @@
-# Details of a user
+# Details of settings
 ---
 clusterSettings:
   - name: test-cluster
