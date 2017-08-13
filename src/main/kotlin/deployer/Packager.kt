@@ -2,10 +2,17 @@ package deployer
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import deployer.model.Deployment
+import deployer.model.*
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder
+import org.apache.commons.lang3.builder.ToStringStyle
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
+import java.net.MalformedURLException
+import java.net.URL
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
 /**
  *
@@ -30,33 +37,34 @@ class Packager {
         val mapper = ObjectMapper(YAMLFactory());
         try {
             val deployment: Deployment = mapper.readValue(File("deployer/src/test/data/deployment.yaml"), Deployment::class.java)
-//            System.out.println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
-//            Settings settings = mapper.readValue(new File("deployer/src/test/data/settings.yaml"), Settings.class);
-//            System.out.println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
-//
-//            List<Download> downloads = new ArrayList<>();
-//            for (Cluster cluster : deployment.getClusters()) {
-//                for (Deploy deploy : cluster.getDeploy()) {
-//                String type = deploy.getType();
-//                if (type == null) {
-//                    type = settings.findCluster(cluster.getName()).map(clusterSetting -> clusterSetting.getDefaultArtifactType())
-//                    .orElse("war");
-//                }
-//                downloads.add(new Download(deploy.getGroup(), deploy.getArtifact(), deploy.getVersion(), type));
-//            }
-//            }
-//            downloadDirectory.mkdirs();
-//            for (Download download : downloads) {
-//                download.execute(settings, downloadDirectory);
-//            }
+            println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
+            val settings: Settings = mapper.readValue(File("deployer/src/test/data/settings.yaml"), Settings::class.java);
+            println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
+
+            val downloads: MutableList<Download> = ArrayList();
+            for (cluster: Cluster in deployment.clusters) {
+                for (deploy: Deploy in cluster.deploy) {
+                    var type: String? = deploy.type
+                    if (type == null) {
+                        val foundCluster: ClusterSetting? = settings.findCluster(cluster.name)
+                        type = if (foundCluster == null) "war" else foundCluster.defaultArtifactType
+                    }
+                    downloads.add(Download(deploy.group, deploy.artifact, deploy.version, type));
+                }
+            }
+            downloadDirectory.mkdirs();
+            downloads.forEach { it.execute(settings, downloadDirectory) }
         } catch (e: IOException) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
-//    private static class Download {
-//        private String group;
+    private data class Download(val group: String?, val artifact: String, val version: String, val extension: String) {
+
+        val log = LoggerFactory.getLogger(Packager::class.java)
+
+        //        private String group;
 //        private String artifact;
 //        private String version;
 //        private String extension;
@@ -68,40 +76,35 @@ class Packager {
 //            this.extension = extension;
 //        }
 //
-//        public void execute(Settings settings, File downloadDirectory) {
-//            boolean done = false;
-//            for (int i = 0; !done && i < settings.getDownloadRepositoryUrl().length; i++) {
-//                String repositoryUrl = settings.getDownloadRepositoryUrl()[i];
-//                StringBuffer fileName = new StringBuffer(artifact).append("-").append(version).append(".").append(extension);
-//                StringBuffer url = new StringBuffer(repositoryUrl);
-//                if (this.group != null){
-//                    url.append("/").append(group);
-//                }
-//                url.append("/").append(artifact).append("/").append(version).append("/").append(fileName);
-//                try {
-//                    URL downloadUrl = new URL(url.toString());
-//                    File downloadFile = new File(downloadDirectory, fileName.toString());
-//                    try (InputStream inputStream = downloadUrl.openStream();) {
-//                        log.debug("download {}", downloadUrl.toString());
-//                        Files.copy(inputStream, Paths.get(downloadFile.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
-////            byte[] buffer = new byte[1024];
-////            int length = inputStream.read(buffer);
-////            while (length > 0) {
-////              outputStream.write(buffer, 0, length);
-////              length = inputStream.read(buffer);
-////            }
-////            outputStream.flush();
-//                        done = true;
-//                    } catch (IOException e) {
-//                        log.debug("failed to open URL {}", url.toString());
-//                    }
-//                    } catch (MalformedURLException e) {
-//                        throw new RuntimeException("Invalid URL", e);
-//                    }
+        fun execute(settings: Settings, downloadDirectory: File) {
+            var done = false;
+            for (i in 0..settings.downloadRepositoryUrl.size) {
+                val repositoryUrl = settings.downloadRepositoryUrl[i];
+                val fileName = StringBuffer(artifact).append("-").append(version).append(".").append(extension);
+                val url = StringBuffer(repositoryUrl);
+                if (this.group != null){
+                    url.append("/").append(group);
+                }
+                url.append("/").append(artifact).append("/").append(version).append("/").append(fileName);
+                try {
+                    val downloadUrl: URL = URL(url.toString());
+                    val downloadFile: File = File(downloadDirectory, fileName.toString());
+                    try {
+                        downloadUrl.openStream().use {
+                            //                        log.debug("download {}", downloadUrl.toString());
+                            Files.copy(it, Paths.get(downloadFile.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
+                            done = true;
+                        }
+                    } catch (e: Exception) {
+                        log.debug("failed to open URL {}", url.toString());
+                    }
+                } catch (e: MalformedURLException) {
+                    throw RuntimeException("Invalid URL", e);
+                }
 //                }
 //            if (!done) {
 //                throw new RuntimeException("download failed: " + artifact + "-" + version + "." + extension);
-//            }
-//        }
-//    }
+            }
+        }
+    }
 }

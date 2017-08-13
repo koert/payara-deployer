@@ -1,10 +1,10 @@
 # Details of a user
 ---
 clusters:
-  - name: pas-cluster
+  - name: test-cluster
 
     deploy:
-    - artifact: pas-app-web
-      group: nl/mijnprivilege/pas
+    - artifact: test-app-web
+      group: deployer/test
       version: 10.4.1.2
-      name: pas-app-web
+      name: test-app-web
