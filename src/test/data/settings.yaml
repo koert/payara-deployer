@@ -13,5 +13,6 @@ useVersion: true
 downloadRepositoryUrl:
 - http://localhost:8081/nexus/content/groups/public
 - http://buildserver:8080/nexus-webapp-1.5.0/content/repositories/releases
+- file:///home/koert/.m2/repository
 
 uploadRepositoryUrl: http://localhost:8081/nexus/content/repositories/releases
