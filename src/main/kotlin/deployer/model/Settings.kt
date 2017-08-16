@@ -4,8 +4,8 @@ package deployer.model
  *
  * @author Koert Zeilstra
  */
-data class Settings (var useVersion: Boolean, var downloadRepositoryUrl: Array<String>, var uploadRepositoryUrl: String,
-                     var clusterSettings: Array<ClusterSetting>) {
+data class Settings (var useVersion: Boolean = false, var downloadRepositoryUrl: Array<String> = arrayOf<String>(),
+                     var uploadRepositoryUrl: String? = null, var clusterSettings: Array<ClusterSetting> = arrayOf<ClusterSetting>()) {
     fun findCluster(name: String?): ClusterSetting? {
         var foundClusterSetting: ClusterSetting? = null
         for (clusterSetting: ClusterSetting in clusterSettings) {

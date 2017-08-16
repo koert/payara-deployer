@@ -4,4 +4,5 @@ package deployer.model
  *
  * @author Koert Zeilstra
  */
-data class ClusterSetting(var name: String, var nodes: Array<String>, var rollingUpdate: Boolean, var defaultArtifactType: String)
+data class ClusterSetting(var name: String? = null, var nodes: Array<String> = arrayOf<String>(), var rollingUpdate: Boolean = false,
+                          var defaultArtifactType: String? = null)
