@@ -15,24 +15,41 @@ import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
 val ARG_DOWNLOAD_DIR = "--downloadDir"
+val ARG_DEPLOYMENT = "--deployment"
+val ARG_SETTINGS = "--settings"
 
 val log = LoggerFactory.getLogger(Packager::class.java)
 
 fun main(args : Array<String>) {
     var downloadDirectory = File("download");
+    var deploymentFile: File? = null;
+    var settingsFile: File? = null;
     for (i: Int in 0..args.size-1) {
         val arg = args[i];
         if (arg.startsWith(ARG_DOWNLOAD_DIR + "=")) {
             val directoryName = arg.substring(ARG_DOWNLOAD_DIR.length + 1);
             downloadDirectory = File(directoryName);
+        } else if (arg.startsWith(ARG_DEPLOYMENT + "=")) {
+            val fileName = arg.substring(ARG_DEPLOYMENT.length + 1);
+            deploymentFile = File(fileName);
+        } else if (arg.startsWith(ARG_SETTINGS + "=")) {
+            val fileName = arg.substring(ARG_SETTINGS.length + 1);
+            settingsFile = File(fileName);
         }
+    }
+
+    if (deploymentFile == null) {
+        deploymentFile = File("src/test/data/deployment.yaml");
+    }
+    if (settingsFile == null) {
+        settingsFile = File("src/test/data/settings.yaml");
     }
 
     val mapper = ObjectMapper(YAMLFactory());
     try {
-        val deployment: Deployment = mapper.readValue(File("src/test/data/deployment.yaml"), Deployment::class.java)
+        val deployment: Deployment = mapper.readValue(deploymentFile, Deployment::class.java)
         println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
-        val settings: Settings = mapper.readValue(File("src/test/data/settings.yaml"), Settings::class.java);
+        val settings: Settings = mapper.readValue(settingsFile, Settings::class.java);
         println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
 
         val downloads: MutableList<Packager.Download> = ArrayList();
@@ -82,7 +99,7 @@ class Packager {
 //
         fun execute(settings: Settings, downloadDirectory: File) {
             var done = false;
-            for (i in 0..settings.downloadRepositoryUrl.size) {
+            for (i in 0..settings.downloadRepositoryUrl.size-1) {
                 if (!done) {
                     val repositoryUrl = settings.downloadRepositoryUrl[i];
                     val fileName = StringBuffer(artifact).append("-").append(version).append(".").append(extension);
