@@ -4,25 +4,43 @@ clusterSettings:
   - name: test-cluster
     nodes:
     - localhost
-    target:
-      server
     rollingUpdate: false
     defaultArtifactType: war
     environments:
     - name: otap
+      type: das
       nodes:
       - node04
       - node05
       httpPort: 28081
     - name: local
+      type: server
       nodes:
       - localhost
       httpPort: 8080
+
+  - name: test-cluster-otap
+    type: das
+    nodes:
+    - node04
+    - node05
+    rollingUpdate: false
+    defaultArtifactType: war
+    httpPort: 28081
+
+  - name: test-cluster-local
+    type: server
+    nodes:
+    - localhost
+    rollingUpdate: false
+    defaultArtifactType: war
+    httpPort: 8080
 
 useVersion: true
 
 downloadRepositoryUrl:
 - http://localhost:8081/nexus/content/groups/public
 - http://buildserver:8080/nexus-webapp-1.5.0/content/repositories/releases
+- file:///home/koert/.m2/repository
 
 uploadRepositoryUrl: http://localhost:8081/nexus/content/repositories/releases
