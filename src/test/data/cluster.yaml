@@ -1,0 +1,28 @@
+# Details of a settings
+---
+clusters:
+  - name: test-cluster
+    environments:
+    - name: dev
+      type: das
+      rollingUpdate: true
+      server: padev01
+      nodes:
+      - padev02
+      - padev03
+      httpPort: 28081
+    - name: otap
+      type: das
+      rollingUpdate: true
+      server: node03
+      nodes:
+      - node04
+      - node05
+      httpPort: 28081
+    - name: local
+      type: standalone
+      rollingUpdate: false
+      nodes:
+      - localhost
+      httpPort: 8080
+

@@ -1,11 +1,8 @@
-# Details of a settings
+# Details of clusters
 ---
-clusterSettings:
+clusters:
   - name: test-cluster
-    nodes:
-    - localhost
-    rollingUpdate: false
-    defaultArtifactType: war
+    rollingUpdate: true
     environments:
     - name: otap
       type: das
@@ -14,6 +11,7 @@ clusterSettings:
       - node05
       httpPort: 28081
     - name: local
+      rollingUpdate: false
       type: server
       nodes:
       - localhost
@@ -37,6 +35,7 @@ clusterSettings:
     httpPort: 8080
 
 useVersion: true
+defaultArtifactType: war
 
 downloadRepositoryUrl:
 - http://localhost:8081/nexus/content/groups/public

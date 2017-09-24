@@ -1,10 +1,12 @@
-# Deployment speficication
+# Deployment specification
 ---
-clusters:
-  - name: test-cluster
+defaultSettings:
+  useVersion: true
 
-    deploy:
-    - artifact: monitor-web
-      group: nl/zencode/monitor-app
-      version: 0.1.0
-      name: monitor-web
+deployments:
+  - artifact: monitor-web
+    group: nl/zencode/monitor-app
+    version: 0.1.0
+    name: monitor-web
+    target:
+      test-cluster

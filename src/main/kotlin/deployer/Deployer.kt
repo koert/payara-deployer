@@ -16,11 +16,13 @@ import java.nio.file.StandardCopyOption
 
 val DEPLOYER_DOWNLOAD_DIR = "--downloadDir"
 val DEPLOYER_DEPLOYMENT = "--deployment"
+val DEPLOYER_CLUSTER = "--cluster"
 val DEPLOYER_SETTINGS = "--settings"
 
 fun main(args : Array<String>) {
     var downloadDirectory = File("download");
     var deploymentFile: File? = null;
+    var clusterFile: File? = null;
     var settingsFile: File? = null;
     for (i: Int in 0..args.size-1) {
         val arg = args[i];
@@ -30,6 +32,9 @@ fun main(args : Array<String>) {
         } else if (arg.startsWith(ARG_DEPLOYMENT + "=")) {
             val fileName = arg.substring(ARG_DEPLOYMENT.length + 1);
             deploymentFile = File(fileName);
+        } else if (arg.startsWith(DEPLOYER_CLUSTER + "=")) {
+            val fileName = arg.substring(DEPLOYER_CLUSTER.length + 1);
+            clusterFile = File(fileName);
         } else if (arg.startsWith(ARG_SETTINGS + "=")) {
             val fileName = arg.substring(ARG_SETTINGS.length + 1);
             settingsFile = File(fileName);
@@ -39,19 +44,24 @@ fun main(args : Array<String>) {
     if (deploymentFile == null) {
         deploymentFile = File("src/test/data/deployment.yaml");
     }
+    if (clusterFile == null) {
+        clusterFile = File("src/test/data/cluster.yaml");
+    }
     if (settingsFile == null) {
         settingsFile = File("src/test/data/settings.yaml");
     }
 
     val mapper = ObjectMapper(YAMLFactory());
     try {
-        val deployment: Deployment = mapper.readValue(deploymentFile, Deployment::class.java)
-        println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
+        val deploymentConfig: DeploymentConfig = mapper.readValue(deploymentFile, DeploymentConfig::class.java)
+        println(ReflectionToStringBuilder.toString(deploymentConfig, ToStringStyle.MULTI_LINE_STYLE));
+        val clusterConfig: Deployment = mapper.readValue(clusterFile, Deployment::class.java)
+        println(ReflectionToStringBuilder.toString(clusterConfig, ToStringStyle.MULTI_LINE_STYLE));
         val settings: Settings = mapper.readValue(settingsFile, Settings::class.java);
-        println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
+        println(ReflectionToStringBuilder.toString(settings, ToStringStyle.MULTI_LINE_STYLE));
 
         val downloads: MutableList<Packager.Download> = ArrayList();
-        for (cluster: Cluster in deployment.clusters) {
+        for (deployment: DeploymentItem in deploymentConfig.deployments) {
             for (deploy: Deploy in cluster.deploy) {
                 var type: String? = deploy.type
                 if (type == null) {
