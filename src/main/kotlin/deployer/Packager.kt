@@ -2,7 +2,10 @@ package deployer
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import deployer.model.*
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import deployer.model.DeploymentConfig
+import deployer.model.DeploymentItem
+import deployer.model.Settings
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder
 import org.apache.commons.lang3.builder.ToStringStyle
 import org.slf4j.LoggerFactory
@@ -45,30 +48,44 @@ fun main(args : Array<String>) {
         settingsFile = File("src/test/data/settings.yaml");
     }
 
-    val mapper = ObjectMapper(YAMLFactory());
+    val mapper = ObjectMapper(YAMLFactory())
+    mapper.registerModule(KotlinModule()) // Enable Kotlin support
     try {
-        val deployment: Deployment = mapper.readValue(deploymentFile, Deployment::class.java)
-        println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
+//        val deployment: Deployment = mapper.readValue(deploymentFile, Deployment::class.java)
+//        println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
+        val deploymentConfig: DeploymentConfig = mapper.readValue(deploymentFile, DeploymentConfig::class.java)
+        println(ReflectionToStringBuilder.toString(deploymentConfig, ToStringStyle.MULTI_LINE_STYLE));
         val settings: Settings = mapper.readValue(settingsFile, Settings::class.java);
-        println(ReflectionToStringBuilder.toString(deployment, ToStringStyle.MULTI_LINE_STYLE));
+        println(ReflectionToStringBuilder.toString(settings, ToStringStyle.MULTI_LINE_STYLE));
 
-        val downloads: MutableList<Packager.Download> = ArrayList();
-        for (cluster: Cluster in deployment.clusters) {
-            for (deploy: Deploy in cluster.deploy) {
-                var type: String? = deploy.type
-                if (type == null) {
-                    val foundCluster: ClusterSetting? = settings.findCluster(cluster.name)
-                    type = if (foundCluster == null) "war" else foundCluster.defaultArtifactType
-                }
-                val artifact: String? = deploy.artifact
-                val version: String? = deploy.version
-                if (type != null && artifact != null && version != null) {
-                    downloads.add(Packager.Download(deploy.group, artifact, version, type));
-                }
+        val defaultDeploymentType: String = deploymentConfig.defaultArtifactType ?: "war"
+        val downloadRepository: DownloadRepository = DownloadRepository(downloadDirectory, settings)
+
+        val scheduledDeployments: MutableList<ScheduledDeployment> = ArrayList()
+        for (deployment: DeploymentItem in deploymentConfig.deployments) {
+            val type: String = deployment.type ?: defaultDeploymentType
+            val downloadedArtifact = downloadRepository.getDownloadedArtifact(deployment, type)
+            if (downloadedArtifact != null) {
+                scheduledDeployments.add(ScheduledDeployment(deployment, downloadedArtifact))
             }
         }
-        downloadDirectory.mkdirs();
-        downloads.forEach { it.execute(settings, downloadDirectory) }
+//        val downloads: MutableList<Packager.Download> = ArrayList();
+//        for (cluster: Cluster in deployment.clusters) {
+//            for (deploy: Deploy in cluster.deploy) {
+//                var type: String? = deploy.type
+//                if (type == null) {
+//                    val foundCluster: ClusterSetting? = settings.findCluster(cluster.name)
+//                    type = if (foundCluster == null) "war" else foundCluster.defaultArtifactType
+//                }
+//                val artifact: String? = deploy.artifact
+//                val version: String? = deploy.version
+//                if (type != null && artifact != null && version != null) {
+//                    downloads.add(Packager.Download(deploy.group, artifact, version, type));
+//                }
+//            }
+//        }
+//        downloadDirectory.mkdirs();
+//        downloads.forEach { it.execute(settings, downloadDirectory) }
     } catch (e: IOException) {
         // TODO Auto-generated catch block
         e.printStackTrace();

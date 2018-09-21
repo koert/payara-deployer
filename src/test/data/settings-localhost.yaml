@@ -1,6 +1,9 @@
 # Details of clusters
 ---
-clusters:
+useVersion: true
+defaultArtifactType: war
+
+clusterSettings:
   - name: test-cluster
     rollingUpdate: true
     environments:
@@ -33,9 +36,6 @@ clusters:
     rollingUpdate: false
     defaultArtifactType: war
     httpPort: 8080
-
-useVersion: true
-defaultArtifactType: war
 
 downloadRepositoryUrl:
 - http://localhost:8081/nexus/content/groups/public

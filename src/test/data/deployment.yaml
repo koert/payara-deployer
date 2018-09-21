@@ -1,12 +1,13 @@
 # Deployment specification
+# Lists artifacts that need to be deployed and on which target.
 ---
-defaultSettings:
-  useVersion: true
-
 deployments:
   - artifact: monitor-web
     group: nl/zencode/monitor-app
     version: 0.1.0
     name: monitor-web
     target:
-      test-cluster
+    - test-cluster
+
+defaultArtifactType: "war"
+

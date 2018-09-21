@@ -1,12 +1,17 @@
 # Details of settings
 ---
 clusterSettings:
-  - name: test-cluster
-    nodes:
-    - node1
-    - node2
-    rollingUpdate: false
-    defaultArtifactType: war
+- name: test-cluster
+  type: das
+  nodes:
+  - node1
+  - node2
+  rollingUpdate: false
+  defaultArtifactType: war
+  httpPort: 28080
+  adminCommand: /home/koert/software/payara5/bin/asadmin
+  adminPort: 4848
+  adminPassword: admin
 
 useVersion: true
 
@@ -16,3 +21,4 @@ downloadRepositoryUrl:
 - file:///home/koert/.m2/repository
 
 uploadRepositoryUrl: http://localhost:8081/nexus/content/repositories/releases
+
