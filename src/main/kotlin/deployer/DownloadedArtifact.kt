@@ -6,5 +6,5 @@ import java.io.File
  *
  * @author Koert Zeilstra
  */
-class DownloadedArtifact(val file: File)  {
+data class DownloadedArtifact(val file: File)  {
 }

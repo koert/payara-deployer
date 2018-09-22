@@ -9,6 +9,7 @@ import deployer.model.DeploymentItem
 import deployer.model.Settings
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder
 import org.apache.commons.lang3.builder.ToStringStyle
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 
@@ -109,7 +110,7 @@ fun main(args : Array<String>) {
     }
 }
 
-class ScheduledDeployment(val deployment: DeploymentItem, val download: DownloadedArtifact) {
+data class ScheduledDeployment(val deployment: DeploymentItem, val download: DownloadedArtifact) {
 
 }
 
@@ -119,8 +120,11 @@ class ScheduledDeployment(val deployment: DeploymentItem, val download: Download
  */
 class Deployer(val settings: Settings) {
 
-    fun deploy(scheduledDeployment: ScheduledDeployment) {
 
+    val log = LoggerFactory.getLogger(Packager::class.java)
+
+    fun deploy(scheduledDeployment: ScheduledDeployment) {
+        log.debug("deploy {}", scheduledDeployment)
     }
 
 //    data class Download(val group: String?, val artifact: String, val version: String, val extension: String) {
