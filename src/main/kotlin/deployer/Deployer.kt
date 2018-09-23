@@ -10,8 +10,9 @@ import deployer.model.Settings
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder
 import org.apache.commons.lang3.builder.ToStringStyle
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.io.IOException
+import java.io.*
+import java.util.*
+import java.util.concurrent.Executors
 
 val DEPLOYER_DOWNLOAD_DIR = "--downloadDir"
 val DEPLOYER_DEPLOYMENT = "--deployment"
@@ -85,7 +86,7 @@ fun main(args : Array<String>) {
             for (target: String in scheduledDeployment.deployment.target) {
                 val foundCluster: ClusterSetting? = targetRepository.findCluster(target)
                 if (foundCluster != null) {
-                    deployer.deploy(scheduledDeployment)
+                    deployer.deploy(scheduledDeployment, foundCluster)
                 }
             }
 
@@ -111,7 +112,7 @@ fun main(args : Array<String>) {
 }
 
 data class ScheduledDeployment(val deployment: DeploymentItem, val download: DownloadedArtifact) {
-
+    val name = deployment.name + ":" + deployment.version
 }
 
 /**
@@ -121,10 +122,42 @@ data class ScheduledDeployment(val deployment: DeploymentItem, val download: Dow
 class Deployer(val settings: Settings) {
 
 
-    val log = LoggerFactory.getLogger(Packager::class.java)
+    val log = LoggerFactory.getLogger(Deployer::class.java)
 
-    fun deploy(scheduledDeployment: ScheduledDeployment) {
+    fun deploy(scheduledDeployment: ScheduledDeployment, cluster: ClusterSetting) {
         log.debug("deploy {}", scheduledDeployment)
+        if (cluster.adminCommand == null) {
+            log.error("cannot deploy, adminCommand is not specified")
+        } else {
+            cluster.nodes.forEach { node ->
+                val builder: ProcessBuilder = ProcessBuilder()
+                val commandLine = mutableListOf<String>(cluster.adminCommand,
+                        "-p", Integer.toString(cluster.adminPort),
+                        "--user", cluster.adminUser ?: "admin")
+//                    "--passwordfile", cluster.adminPasswordFile ?: "",
+//                    "deploy",
+//                    "--target", cluster.name,
+//                    "--name",
+//                    scheduledDeployment.download.file.absolutePath)
+                if (cluster.adminPasswordFile != null) {
+                    commandLine.addAll(listOf<String>("--passwordfile", cluster.adminPasswordFile))
+                }
+                commandLine.add("deploy")
+                commandLine.addAll(listOf<String>("--target", node))
+                commandLine.addAll(listOf<String>("--name", scheduledDeployment.name))
+                commandLine.add(scheduledDeployment.download.file.absolutePath)
+                log.info("command '{}'", commandLine.joinToString(" "))
+                builder.command(commandLine)
+                val process: Process = builder.start()
+                val streamLineReader = StreamLineReader(process.inputStream)
+                val executor = Executors.newSingleThreadExecutor()
+                executor.submit(streamLineReader)
+                val exitCode = process.waitFor()
+                log.debug("exitCode: {}", exitCode)
+                log.debug("output: {}", streamLineReader.lines)
+                executor.shutdown()
+            }
+        }
     }
 
 //    data class Download(val group: String?, val artifact: String, val version: String, val extension: String) {
@@ -178,3 +211,10 @@ class Deployer(val settings: Settings) {
 //    }
 }
 
+class StreamLineReader(val inputStream: InputStream) : Runnable  {
+    val lines = ArrayList<String>()
+
+    override fun run(): Unit {
+        BufferedReader(InputStreamReader(inputStream)).lines().forEach({line -> this.lines.add(line)});
+    }
+}

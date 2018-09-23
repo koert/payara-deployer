@@ -1,8 +1,18 @@
 # Details of settings
 ---
 clusterSettings:
+- name: localhost
+  type: server
+  nodes:
+    - server
+  rollingUpdate: false
+  httpPort: 8080
+  adminCommand: /home/koert/software/payara5/bin/asadmin
+  adminPort: 4848
+  adminUser: admin
+  adminPasswordFile: /home/koert/software/payara5/asadmin-password
 - name: test-cluster
-  type: das
+  type: standalone
   nodes:
   - node1
   - node2
@@ -11,7 +21,8 @@ clusterSettings:
   httpPort: 28080
   adminCommand: /home/koert/software/payara5/bin/asadmin
   adminPort: 4848
-  adminPassword: admin
+  adminUser: admin
+  adminPasswordFile: /home/koert/software/payara41/asadmin-password
 
 useVersion: true
 

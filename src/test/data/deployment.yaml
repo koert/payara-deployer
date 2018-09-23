@@ -2,12 +2,13 @@
 # Lists artifacts that need to be deployed and on which target.
 ---
 deployments:
-  - artifact: monitor-web
-    group: nl/zencode/monitor-app
-    version: 0.1.0
-    name: monitor-web
-    target:
-    - test-cluster
+- artifact: monitor-web
+  group: nl/zencode/monitor-app
+  version: 0.1.0
+  name: monitor-web
+  target:
+  - localhost
+#  - test-cluster
 
 defaultArtifactType: "war"
 

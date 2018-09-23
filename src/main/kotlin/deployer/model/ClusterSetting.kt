@@ -6,10 +6,11 @@ package deployer.model
  */
 data class ClusterSetting(var name: String? = null,
                           var type: String? = null,
-                          var nodes: Array<String> = arrayOf<String>(),
+                          val nodes: Array<String> = arrayOf<String>(),
                           var rollingUpdate: Boolean = false,
                           var defaultArtifactType: String? = null,
                           var httpPort: Int? = null,
-                          var adminCommand: String? = null,
-                          var adminPort: Int? = null,
-                          var adminPassword: String? = null)
+                          val adminCommand: String? = null,
+                          var adminPort: Int = 4848,
+                          var adminUser: String? = null,
+                          val adminPasswordFile: String? = null)
