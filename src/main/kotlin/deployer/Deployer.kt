@@ -129,11 +129,12 @@ class Deployer(val settings: Settings) {
         if (cluster.adminCommand == null) {
             log.error("cannot deploy, adminCommand is not specified")
         } else {
-            cluster.nodes.forEach { node ->
+            cluster.instances.forEach { instance ->
                 val builder: ProcessBuilder = ProcessBuilder()
                 val commandLine = mutableListOf<String>(cluster.adminCommand,
                         "-p", Integer.toString(cluster.adminPort),
-                        "--user", cluster.adminUser ?: "admin")
+                        "--user", cluster.adminUser ?: "admin",
+                        "--terse=true", "--interactive=false")
 //                    "--passwordfile", cluster.adminPasswordFile ?: "",
 //                    "deploy",
 //                    "--target", cluster.name,
@@ -143,7 +144,7 @@ class Deployer(val settings: Settings) {
                     commandLine.addAll(listOf<String>("--passwordfile", cluster.adminPasswordFile))
                 }
                 commandLine.add("deploy")
-                commandLine.addAll(listOf<String>("--target", node))
+                commandLine.addAll(listOf<String>("--target", instance.name))
                 commandLine.addAll(listOf<String>("--name", scheduledDeployment.name))
                 commandLine.add(scheduledDeployment.download.file.absolutePath)
                 log.info("command '{}'", commandLine.joinToString(" "))
@@ -153,6 +154,7 @@ class Deployer(val settings: Settings) {
                 val executor = Executors.newSingleThreadExecutor()
                 executor.submit(streamLineReader)
                 val exitCode = process.waitFor()
+                Thread.sleep(2000)
                 log.debug("exitCode: {}", exitCode)
                 log.debug("output: {}", streamLineReader.lines)
                 executor.shutdown()

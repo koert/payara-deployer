@@ -7,6 +7,7 @@ package deployer.model
 data class ClusterSetting(var name: String? = null,
                           var type: String? = null,
                           val nodes: Array<String> = arrayOf<String>(),
+                          val instances: Array<Instance> = arrayOf<Instance>(),
                           var rollingUpdate: Boolean = false,
                           var defaultArtifactType: String? = null,
                           var httpPort: Int? = null,

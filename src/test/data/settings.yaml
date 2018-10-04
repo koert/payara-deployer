@@ -5,14 +5,25 @@ clusterSettings:
   type: server
   nodes:
     - server
+  instances:
+  - name: server
+    hostName: localhost
+    httpPort: 8080
   rollingUpdate: false
   httpPort: 8080
-  adminCommand: /home/koert/software/payara5/bin/asadmin
+  adminCommand: /home/koert/software/payara41/bin/asadmin
   adminPort: 4848
   adminUser: admin
-  adminPasswordFile: /home/koert/software/payara5/asadmin-password
+  adminPasswordFile: /home/koert/software/payara41/asadmin-password
 - name: test-cluster
   type: standalone
+  instances:
+    - name: test-instance1
+      hostName: node01
+      httpPort: 28080
+    - name: test-instance2
+      hostName: node02
+      httpPort: 28080
   nodes:
   - node1
   - node2
