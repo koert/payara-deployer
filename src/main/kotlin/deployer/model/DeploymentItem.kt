@@ -7,6 +7,7 @@ package deployer.model
 data class DeploymentItem(
         var artifact: String? = null,
         var group: String? = null,
+        var previousVersion: String? = null,
         var version: String? = null,
         var name: String? = null,
         var type: String? = null,

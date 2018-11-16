@@ -4,7 +4,7 @@ package deployer.model
  *
  * @author Koert Zeilstra
  */
-data class ClusterSetting(var name: String? = null,
+data class ClusterSetting(var name: String,
                           var type: String? = null,
                           val nodes: Array<String> = arrayOf<String>(),
                           val instances: Array<Instance> = arrayOf<Instance>(),

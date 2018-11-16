@@ -3,10 +3,7 @@ package deployer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import deployer.model.ClusterSetting
-import deployer.model.DeploymentConfig
-import deployer.model.DeploymentItem
-import deployer.model.Settings
+import deployer.model.*
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder
 import org.apache.commons.lang3.builder.ToStringStyle
 import org.slf4j.LoggerFactory
@@ -24,6 +21,19 @@ val DEPLOYER_SETTINGS = "--settings"
  * deployment.yaml describes what needs to be deployed
  * settings.yaml lists download location, cluster configurations
  * The artifacts can be downloaded or used from filesystem.
+ *
+ * artifact
+ * - previous == null: new component
+ *   if component exists: undeploy existing component (is repair action)
+ *   deploy specified version
+ * - version == null: delete component
+ *   if component exists: undeploy existing component
+ * - previous != null && version != null: update component
+ *   if component exists and existing component version == version:
+ *     skip update
+ *   else:
+ *     if component exists: undeploy existing component
+ *     deploy specified version
  */
 fun main(args : Array<String>) {
     var downloadDirectory = File("download");
@@ -64,14 +74,16 @@ fun main(args : Array<String>) {
         println(ReflectionToStringBuilder.toString(deploymentConfig, ToStringStyle.MULTI_LINE_STYLE));
 //        val clusterConfig: Deployment = mapper.readValue(clusterFile, Deployment::class.java)
 //        println(ReflectionToStringBuilder.toString(clusterConfig, ToStringStyle.MULTI_LINE_STYLE));
-        val settings: Settings = mapper.readValue(settingsFile, Settings::class.java);
+        val settings: Settings = mapper.readValue(settingsFile, Settings::class.java)
         println(ReflectionToStringBuilder.toString(settings, ToStringStyle.MULTI_LINE_STYLE));
 
         val defaultDeploymentType: String = deploymentConfig.defaultArtifactType ?: "war"
 
         val downloadRepository: DownloadRepository = DownloadRepository(downloadDirectory, settings)
-        val targetRepository: TargetRepository = TargetRepository(settings)
-        val deployer = Deployer(settings)
+        val applicationServer = ApplicationServer(settings)
+//        val targetRepository: TargetRepository = TargetRepository(settings)
+//        targetRepository.retrieveDeployedArtifacts()
+//        val deployer = Deployer(settings)
 
         val scheduledDeployments: MutableList<ScheduledDeployment> = ArrayList()
         for (deployment: DeploymentItem in deploymentConfig.deployments) {
@@ -82,27 +94,15 @@ fun main(args : Array<String>) {
             }
         }
 
-        for (scheduledDeployment: ScheduledDeployment in scheduledDeployments) {
-            for (target: String in scheduledDeployment.deployment.target) {
-                val foundCluster: ClusterSetting? = targetRepository.findCluster(target)
-                if (foundCluster != null) {
-                    deployer.deploy(scheduledDeployment, foundCluster)
-                }
-            }
-
-//            for (deploy: Deploy in cluster.deploy) {
-//                var type: String? = deploy.type
-//                if (type == null) {
-//                    val foundCluster: ClusterSetting? = settings.findCluster(cluster.name)
-//                    type = if (foundCluster == null) "war" else foundCluster.defaultArtifactType
-//                }
-//                val artifact: String? = deploy.artifact
-//                val version: String? = deploy.version
-//                if (type != null && artifact != null && version != null) {
-//                    downloads.add(Packager.Download(deploy.group, artifact, version, type));
+        applicationServer.deploy(scheduledDeployments)
+//        for (scheduledDeployment: ScheduledDeployment in scheduledDeployments) {
+//            for (target: String in scheduledDeployment.deployment.target) {
+//                val foundCluster: ClusterSetting? = targetRepository.findCluster(target)
+//                if (foundCluster != null) {
+//                    deployer.deploy(scheduledDeployment, foundCluster)
 //                }
 //            }
-        }
+//        }
 
 
     } catch (e: IOException) {
