@@ -12,7 +12,7 @@ deployments:
 
 - artifact: monitor-web
   group: nl/zencode/monitor-app2
-  version: 0.1.0
+  previousVersion: 0.1.0
   name: monitor-web
   target:
   - localhost

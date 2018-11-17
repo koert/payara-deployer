@@ -22,9 +22,10 @@ class DownloadRepository(val downloadDirectory: File, val settings: Settings) {
         downloadDirectory.mkdirs();
     }
 
-    fun getDownloadedArtifact(deployment: DeploymentItem, type: String): DownloadedArtifact? {
+    fun getDownloadedArtifact(deployment: DeploymentItem, defaultArtifactType: String): DownloadedArtifact {
         var done = false;
         var downloadedArtifact: DownloadedArtifact? = null
+        val type: String = deployment.type ?: defaultArtifactType
         for (i in 0..settings.downloadRepositoryUrl.size-1) {
             if (!done) {
                 val repositoryUrl = settings.downloadRepositoryUrl[i];
@@ -52,11 +53,11 @@ class DownloadRepository(val downloadDirectory: File, val settings: Settings) {
                 }
             }
         }
-        if (!done) {
+        if (!done || downloadedArtifact == null) {
             throw RuntimeException("download failed: " + deployment.artifact + "-" + deployment.version + "." + type)
         }
 
-        return downloadedArtifact
+        return downloadedArtifact!!
     }
 
 }
