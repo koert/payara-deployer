@@ -43,9 +43,9 @@ dependencies {
   compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
 //  testCompile "junit:junit:4.8.1"
-  testCompile "org.mockito:mockito-core:2.23.0"
-  testCompile "org.mockito:mockito-junit-jupiter:2.23.0"
-//  testImplementation "io.mockk:mockk:1.8.13"
+//  testCompile "org.mockito:mockito-core:2.23.0"
+//  testCompile "org.mockito:mockito-junit-jupiter:2.23.0"
+  testCompile "io.mockk:mockk:1.8.13"
   testCompile "org.jetbrains.kotlin:kotlin-test"
   testCompile "org.jetbrains.kotlin:kotlin-test-junit"
   testCompile "org.assertj:assertj-core:1.7.0"
