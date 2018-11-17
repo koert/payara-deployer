@@ -5,13 +5,14 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import deployer.model.ApplicationServer
 import deployer.model.DeploymentConfig
-import deployer.model.DeploymentItem
 import deployer.model.Settings
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.mockito.junit.jupiter.MockitoExtension
 import java.io.File
 
 /**
@@ -19,11 +20,11 @@ import java.io.File
  * @author Koert Zeilstra
  */
 //@RunWith(MockitoJUnitRunner::class.java)
-@ExtendWith(MockitoExtension::class)
+@ExtendWith(MockKExtension::class)
 class DeploymentPlannerTest {
 
-//    @Mock
-//    lateinit var downloadRepository: DownloadRepository
+    @MockK
+    lateinit var downloadRepository: DownloadRepository
 
 
     @Test
@@ -35,12 +36,13 @@ class DeploymentPlannerTest {
         val settings: Settings = mapper.readValue(File("src/test/data/settings.yaml"), Settings::class.java)
 //        val applicationServer = ApplicationServer(settings)
 
-        val downloadRepository = Mockito.mock(DownloadRepository::class.java)
-        val downloadedArtifact0 = Mockito.mock(DownloadedArtifact::class.java)
-        val downloadedArtifact1 = Mockito.mock(DownloadedArtifact::class.java)
-        Mockito.`when`(downloadRepository.getDownloadedArtifact(Mockito.any(DeploymentItem::class.java), Mockito.eq("war")))
-                .thenReturn(downloadedArtifact0, downloadedArtifact1)
-        val applicationServer = Mockito.mock(ApplicationServer::class.java)
+//        val downloadRepository = Mockito.mock(DownloadRepository::class.java)
+        val downloadedArtifact0 = mockk<DownloadedArtifact>()
+        val downloadedArtifact1 = mockk<DownloadedArtifact>()
+        every { downloadRepository.getDownloadedArtifact(any(), "war") } returns downloadedArtifact0 andThen  downloadedArtifact1
+//        Mockito.`when`(downloadRepository.getDownloadedArtifact(Mockito.any(DeploymentItem::class.java), Mockito.eq("war")))
+//                .thenReturn(downloadedArtifact0, downloadedArtifact1)
+        val applicationServer = mockk<ApplicationServer>()
 //        val deploymentConfig = DeploymentConfig(
 //                defaultArtifactType = "war",
 //                deployments = arrayOf()
