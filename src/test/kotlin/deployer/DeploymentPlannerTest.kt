@@ -6,28 +6,24 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import deployer.model.ApplicationServer
 import deployer.model.DeploymentConfig
 import deployer.model.Settings
-import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import java.io.File
 
 /**
  *
  * @author Koert Zeilstra
  */
-//@RunWith(MockitoJUnitRunner::class.java)
-//@ExtendWith(MockKExtension::class)
+@ExtendWith(MockKExtension::class)
 class DeploymentPlannerTest {
 
     @MockK
     lateinit var downloadRepository: DownloadRepository
-
-    @Before
-    fun setUp() = MockKAnnotations.init(this)
 
     @Test
     fun test() {
